@@ -76,6 +76,7 @@ def login() -> None:
     PwField.send_keys(Keys.ENTER)
 
 def use_girl(json_nummber: str, to_model: int) -> None:
+        
     DRIVER.get('https://gosupermodel.com')
     DRIVER.execute_script(script="window.scrollTo(0,0)")
     DRIVER.implicitly_wait(5)
