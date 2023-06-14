@@ -68,7 +68,7 @@ def send_greeting(yeahboy: Any, amount: int, best_friend: bool = False) -> None:
     time.sleep(TIMER)
     DRIVER.find_element_by_css_selector("span[onkeypress='var key=window.event?event.keyCode:event.which;if(key==13||key==32)closeMsgBox();return false;']").click()
 
-def login() -> None:
+def login(json_nummber: str) -> None:
     Usernamefield = DRIVER.find_element_by_xpath("//input[@name='username']")
     Usernamefield.send_keys(credentials[str(json_nummber)][0])
     PwField= DRIVER.find_element_by_xpath("//input[@name='password']")
@@ -80,7 +80,7 @@ def use_girl(json_nummber: str, to_model: int) -> None:
     DRIVER.get('https://gosupermodel.com')
     DRIVER.execute_script(script="window.scrollTo(0,0)")
     DRIVER.implicitly_wait(5)
-    login()
+    login(json_nummber)
     DRIVER.execute_script(script="window.scrollTo(0,0)")
     try:
         DRIVER.find_element_by_xpath("//div[@id='pinball_frame']/div[7]").click()
