@@ -2,8 +2,8 @@
 
 
 1.  Download Edge_Webdriver and extract into folder
-2.  Setup json like following example 
-        ***JSON
+2.  Setup json like following example
+___
             {
                 "1": [
                     "uname1",
@@ -22,5 +22,5 @@
                     <css_id of model 2>
                 ]
             }
-        ***
+___
 3. Currently the script exspects that model 2 and 3 are best friends.
