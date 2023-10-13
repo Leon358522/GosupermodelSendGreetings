@@ -1,7 +1,7 @@
 ##Instructions 
 
 
-1.  Download Edge_Webdriver and extract into folder
+1.  Download Chrome
 2.  Setup json like following example
 ___
             {
