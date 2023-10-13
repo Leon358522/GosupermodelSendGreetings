@@ -19,7 +19,6 @@ ___
                 ]
             }
 ___
-3. Currently the script exspects that model 2 and 3 are best friends.
 
 python SendGruesseWithJSON.py -c 1 -t 2 (uname1 zu uname2)
 python SendGruesseWithJSON.py -c 2 -t 1 (uname2 zu uname1)
