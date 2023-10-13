@@ -16,11 +16,12 @@ ___
                 "3": [
                     "uame3",
                     "pw3"
-                ],
-                "accounts": [
-                    <css_id of model 1>,
-                    <css_id of model 2>
                 ]
             }
 ___
 3. Currently the script exspects that model 2 and 3 are best friends.
+
+python SendGruesseWithJSON.py -c 1 -t 2 (uname1 zu uname2)
+python SendGruesseWithJSON.py -c 2 -t 1 (uname2 zu uname1)
+python SendGruesseWithJSON.py -c 3 -t 0 (uname3 zu uname0)
+

@@ -1,14 +1,23 @@
-import time
+import re
 import argparse
 import json
 from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.chrome.service import Service as EdgeService
 from typing import Any
 
-EDGE_DRIVER = './edgedriver_win64/msedgedriver'
-DRIVER = webdriver.Edge(EDGE_DRIVER)
+options = webdriver.ChromeOptions()
+options.add_argument('--start-maximized')
+
+DRIVER = webdriver.Chrome(options=options)
 TIMER = 0.25
+PAUSE = 0.4
+
+
 
 with open('credentials.json') as f:
     credentials = json.load(f)
@@ -26,7 +35,7 @@ parser.add_argument('-c',
                     )
 parser.add_argument('-t',
                     "--to_model",
-                    choices=range(0, len(credentials["accounts"]), 1),
+                    choices=range(0, len(credentials), 1),
                     metavar='N',
                     type=int,
                     help='The indices of the models to send the greetings to',
@@ -35,82 +44,109 @@ args = parser.parse_args()
 
 
 def select_model(model: str) -> Any:
-    elem_hover = DRIVER.find_element_by_id(model)
+    elem_hover = DRIVER.find_element(By.CSS_SELECTOR, f"a[Modelname={model}]")
     return elem_hover
 
 
 def open_friend_page() -> None:
-    action = ActionChains(DRIVER)
-    action.move_to_element(DRIVER.find_element_by_css_selector())
+    ActionChains(DRIVER).move_to_element(DRIVER.find_element(By.CSS_SELECTOR))
 
 
 def actions_click_and_perform(selector: Any) -> None:
-    actions = ActionChains(DRIVER)
-    actions.click(selector)
-    actions.perform()
+    global PAUSE
+    ActionChains(DRIVER).click(selector).pause(PAUSE).perform()
 
 
 def send_greeting(yeahboy: Any, amount: int, best_friend: bool = False) -> None:
+    wait = WebDriverWait(DRIVER, 3, 500)
     actions = ActionChains(DRIVER)
-    time.sleep(TIMER)
-    actions.move_to_element(yeahboy)
+    DRIVER.execute_script("arguments[0].scrollIntoView();", yeahboy)
+    global PAUSE
+    actions.move_to_element(yeahboy).pause(PAUSE)
     actions.perform()
-    time.sleep(TIMER)
-    actions_click_and_perform(DRIVER.find_element_by_css_selector(
-        '.button:nth-child(11) > span'))  # Select Send Greeting
-    time.sleep(TIMER)
-    if amount == 50 and best_friend == True:
-        actions_click_and_perform(DRIVER.find_element_by_css_selector(
-            "tr:nth-child(4) input"))  # Select 50 G
-    elif amount == 50 and best_friend != True:
-        actions_click_and_perform(DRIVER.find_element_by_css_selector(
-            "tr:nth-child(2) input"))  # Select 50 G
+    selectors = [
+                 "div[class=modeldialog_buttons] a[title*=Be]",
+                 "#friend_badge_hug_table > tbody > tr:nth-child(4) > td > input",
+                 "#friend_badge_hug_table > tbody > tr:nth-child(1) > td > input",
+                 "#assign_button",
+                 "#msgbox_ok",
+                 "table[style='width\:460px'] tr "
+                 ]
+
+    wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, selectors[0])))
+    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors[0])))
+    wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, selectors[0])))
+    actions_click_and_perform(DRIVER.find_element(By.CSS_SELECTOR,
+                                                  selectors[0]))  # Select Send Greeting
+    if amount == 50 :
+        options = DRIVER.find_elements(By.CSS_SELECTOR, selectors[5])
+        pattern = re.compile(".+\d+.+")
+        for option in options:
+            # print(option.text, pattern.match(option.text), re.match(pattern, option.text))
+            if pattern.match(option.text):
+                actions_click_and_perform(option.find_element(By.CSS_SELECTOR,'input'))
     else:
-        actions_click_and_perform(DRIVER.find_element_by_css_selector(
-            "tr:nth-child(1) input"))  # Select 1 G
-    time.sleep(TIMER)
-    actions_click_and_perform(DRIVER.find_element_by_css_selector(
-        "#assign_button > span"))  # Send
-    time.sleep(TIMER)
-    DRIVER.find_element_by_css_selector(
-        "span[onkeypress='var key=window.event?event.keyCode:event.which;if(key==13||key==32)closeMsgBox();return false;']").click()
+        wait.until(EC.presence_of_element_located( (    By.CSS_SELECTOR, selectors[2])))
+        wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors[2])))
+        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, selectors[2])))
+        
+        actions_click_and_perform(DRIVER.find_element(By.CSS_SELECTOR,
+                                                      selectors[2]))  # Select 1 G
+    wait.until(EC.presence_of_element_located(
+        (
+        By.CSS_SELECTOR, selectors[3]))
+        )
+    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors[3])))
+    actions_click_and_perform(DRIVER.find_element(By.CSS_SELECTOR,
+                                                  selectors[3]))  # Send
+    # time.sleep(TIMER)
+    wait.until(EC.presence_of_element_located(( By.CSS_SELECTOR, selectors[4])
+    )
+    )
+    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors[4])))
+    actions.pause(PAUSE).move_to_element(DRIVER.find_element(By.CSS_SELECTOR, selectors[4])).click(DRIVER.find_element(By.CSS_SELECTOR, selectors[4]))
+    actions.perform()
+        # DRIVER.find_element(By.CSS_SELECTOR,
+    #                     "span[onkeypress='var key=window.event?event.keyCode:event.which;if(key==13||key==32)closeMsgBox();return false;']").click()
 
 
 def login(json_nummber: str) -> None:
-    username_field = DRIVER.find_element_by_xpath("//input[@name='username']")
+    username_field = DRIVER.find_element(By.XPATH, "//input[@name='username']")
     username_field.send_keys(credentials[str(json_nummber)][0])
-    pw_field = DRIVER.find_element_by_xpath("//input[@name='password']")
+    pw_field = DRIVER.find_element(By.XPATH, "//input[@name='password']")
     pw_field.send_keys(credentials[str(json_nummber)][1])
     pw_field.send_keys(Keys.ENTER)
 
 
 def use_girl(json_nummber: str, to_model: int) -> None:
 
+    # DRIVER.implicitly_wait(5)
     DRIVER.get('https://gosupermodel.com')
     DRIVER.execute_script(script="window.scrollTo(0,0)")
-    DRIVER.implicitly_wait(5)
     login(json_nummber)
     DRIVER.execute_script(script="window.scrollTo(0,0)")
     try:
-        DRIVER.find_element_by_xpath(
-            "//div[@id='pinball_frame']/div[7]").click()
+        DRIVER.find_element(By.XPATH,
+                            "//div[@id='pinball_frame']/div[7]").click()
     except Exception:
         pass
-    DRIVER.find_element_by_xpath(
-        "//div[@id='framework_all']/div/div[2]/div[2]/a[4]/div").click()
+    DRIVER.find_element(By.XPATH,
+                        "//div[@id='framework_all']/div/div[2]/div[2]/a[4]/div").click()
     DRIVER.execute_script(script="window.scrollTo(0,1000)")
-    g_buttons = select_model(credentials["accounts"][to_model])
-    greetings_started = int(DRIVER.find_element_by_css_selector("#hugs").text)
-    switched, name = False, credentials["accounts"][to_model]
+    g_buttons = select_model(credentials[str(to_model)][0])
+    greetings_started = int(DRIVER.find_element(By.CSS_SELECTOR, "#hugs").text)
+    switched, name = False, credentials[str(to_model)][0]
     while True:
-        greetings = int(DRIVER.find_element_by_css_selector("#hugs").text)
+        ActionChains(DRIVER).move_to_element(DRIVER.find_element(By.CSS_SELECTOR,"#hugs")).perform()
+        greetings = int(DRIVER.find_element(By.CSS_SELECTOR, "#hugs").text)
+        g_buttons = select_model(credentials[str(to_model)][0])
         if json_nummber == 1 and greetings_started-greetings >= greetings_started/2 and switched != True:
-            if credentials["accounts"].index(credentials["accounts"][to_model]) == 0:
-                g_buttons = select_model(credentials["accounts"][1])
-                name = credentials["accounts"][1]
+            if credentials.index(credentials[str(to_model)]) == 0:
+                g_buttons = select_model(credentials[str(2)][0])
+                name = credentials[str(2)][0]
             else:
-                g_buttons = select_model(credentials["accounts"][0])
-                name = credentials["accounts"][0]
+                g_buttons = select_model(credentials[str(1)][0])
+                name = credentials[str(1)][0]
             switched = True
         if (greetings >= 50):
             send_greeting(g_buttons, 50)
@@ -127,10 +163,11 @@ def use_girl(json_nummber: str, to_model: int) -> None:
             print(f"Send 1 greeting {name}, {greetings-1} Grueße to go :D")
             continue
         break
-    DRIVER.find_element_by_xpath("//a[contains(text(),'Log out')]").click()
+    DRIVER.find_element(By.XPATH, "//a[contains(text(),'Log out')]").click()
 
 
 if __name__ == '__main__':
+    DRIVER.implicitly_wait(3)
     for i in args.credential_index:
         use_girl(i, args.to_model)
     DRIVER.close()
