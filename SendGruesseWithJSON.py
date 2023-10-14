@@ -141,7 +141,7 @@ def use_girl(json_nummber: str, to_model: int) -> None:
         greetings = int(DRIVER.find_element(By.CSS_SELECTOR, "#hugs").text)
         g_buttons = select_model(credentials[str(to_model)][0])
         if json_nummber == 1 and greetings_started-greetings >= greetings_started/2 and switched != True:
-            if credentials.index(credentials[str(to_model)]) == 0:
+            if list(credentials.keys()).index(to_model) == 0:
                 g_buttons = select_model(credentials[str(2)][0])
                 name = credentials[str(2)][0]
             else:
