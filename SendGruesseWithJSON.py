@@ -134,20 +134,22 @@ def use_girl(json_nummber: str, to_model: int) -> None:
                         "//div[@id='framework_all']/div/div[2]/div[2]/a[4]/div").click()
     DRIVER.execute_script(script="window.scrollTo(0,1000)")
     g_buttons = select_model(credentials[str(to_model)][0])
-    greetings_started = int(DRIVER.find_element(By.CSS_SELECTOR, "#hugs").text)
-    switched, name = False, credentials[str(to_model)][0]
+  #  greetings_started = int(DRIVER.find_element(By.CSS_SELECTOR, "#hugs").text)
+  #  switched = False 
+    name = credentials[str(to_model)][0]
     while True:
         ActionChains(DRIVER).move_to_element(DRIVER.find_element(By.CSS_SELECTOR,"#hugs")).perform()
         greetings = int(DRIVER.find_element(By.CSS_SELECTOR, "#hugs").text)
         g_buttons = select_model(credentials[str(to_model)][0])
-        if json_nummber == 1 and greetings_started-greetings >= greetings_started/2 and switched != True:
-            if list(credentials.keys()).index(str(to_model)) == 0:
-                g_buttons = select_model(credentials[str(2)][0])
-                name = credentials[str(2)][0]
-            else:
-                g_buttons = select_model(credentials[str(1)][0])
-                name = credentials[str(1)][0]
-            switched = True
+        #experimentell
+        # if json_nummber == 1 and greetings_started-greetings >= greetings_started/2 and switched != True:
+        #     if list(credentials.keys()).index(str(to_model)) == 0:
+        #         g_buttons = select_model(credentials[str(2)][0])
+        #         name = credentials[str(2)][0]
+        #     else:
+        #         g_buttons = select_model(credentials[str(1)][0])
+        #         name = credentials[str(1)][0]
+        #     switched = True
         if (greetings >= 50):
             send_greeting(g_buttons, 50)
             print(
